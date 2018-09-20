@@ -1,0 +1,186 @@
+.comment-txt{
+  margin-bottom:0; 
+  padding-bottom:0;
+}
+.nav-item{
+  padding-right:1.2em;
+}
+.nav-tabs .nav-item{
+  padding-right:0em;
+}
+.content-padding{
+  padding-top: 17.7em;
+}
+.col-no-pad{
+  padding:0;
+}
+.container-fluid{
+  margin-left: 3%;
+  width: 95%;
+  min-height: 80%;
+}
+.row-no-pad{
+  padding: 0;
+}
+.filter-option{
+  width: 150px;
+  font-size: 13px;
+}
+.filter-option-multi{
+  width: 150px;
+  font-size: 13px;
+  padding:0;
+  margin: 0;
+}
+/* Project and Resource Cards */
+  .add-new{
+    color: green;
+  }
+  .add-new:hover{
+    transition: all .25s ease-in;
+    color: #006400!important;    
+  }
+  .view-info{
+    padding-top: 2px;
+    color:blue;
+    font-size: large;
+  }
+  .view-info:hover{
+    transition: all .25s ease-in;
+    color:navy!important;    
+  }
+  .fixed-top{
+    margin-bottom: 0px;
+  }
+  /* footer */
+  .footer-align-res{
+    margin-left:30%;
+    padding-top: 2px;
+    padding-bottom: 3px;
+
+  } 
+  .circle-color{    
+    /* top | right | bottom | left */
+    padding: 0 0.7em 0 0.7em;
+    border-radius: 100px;
+    margin-right:8px;
+  }
+
+  .circle-permanent{
+    background-color: #C5F6F1;
+    border: 1px solid #5f9ea0;
+  }
+  .circle-consultant{
+    background-color:#FEEEE0;
+    border: 1px solid orange;
+  }
+  .circle-billable{
+    border: 1px solid #007F00;
+    background-color: #EDFBED;
+  }
+  .circle-nonbill{
+    border: 1px solid #9174A9;
+    background-color:#F5F1F8;
+  }
+
+  .footer-align{
+    margin-left:38%;
+    padding-top: 2px;
+    padding-bottom: 3px;
+  }
+  /*  */
+  .project-name, .resource-name{
+    margin-top:0;
+    padding-top:5px;
+    padding-bottom: 5px;
+    width:18em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .img-thumbnail{
+    width: 100%;
+    margin:0;    
+  }
+  .alert{
+    color: red;
+    padding: 0;
+    margin: 0;
+  }
+/*  */
+
+/* grid view for the project */
+  .schedule-weekends{
+    float: left;
+    width: 10%;
+    height: 100%;
+    position: static;
+    background-size: 33px 33px, 100% 100%;
+    background-position:-2px -2px, 1px 1px;
+    background-image: -webkit-linear-gradient(rgba(59, 185, 255,.5) 1px, transparent 1px),
+                      -webkit-linear-gradient(0, rgba(59, 185, 255,.5) 1px, transparent 1px);
+  }
+  .red-bottom-border{
+    border-bottom: 1px solid red;
+
+  }
+
+
+  .row-borders{
+    background-size: 33px 33px, 20% 20%;
+    background-position:-2px -2px, 1px 1px;
+    background-image: -webkit-linear-gradient(rgba(59, 185, 255,.5) 1px, transparent 1px),
+                      -webkit-linear-gradient(0, rgba(59, 185, 255,.5) 1px, transparent 1px);
+  }
+
+  .row-schedule:nth-child(even){
+    background-color: rgba(211,211,211, 0.4);
+  }
+/*  */
+
+/* left project description */
+  .project-details{
+    width: 18em;
+  }
+  .project-info{
+    /* top | right | bottom | left */
+    padding: 0.7em 0.2em 0.7em 4.0em;
+  }
+  .resouce-info{
+    /* top | right | bottom | left */
+    padding: 0.7em 0 0.7em 2.0em;
+  }
+  .scheduler-title{
+    background-color: white;
+    min-width:288px;
+    height: 95%;
+    padding-top: 0.9em;
+  }
+/*  */
+
+/* Filtering bars */
+  .fresche-nav-link{
+    border-color:#BABCBF;
+    color:#007BFF;
+    border-bottom-color: transparent;
+    cursor: pointer;
+  }
+  .fresche-nav-link:hover{
+    border-color:#949698;
+    color: #0056C4;
+    border-bottom-color: transparent;
+  }
+  .bg-fresche{
+    background-color: #343A40!important;
+    width: 100%;
+  }
+  .fresche-active{
+    background-color: #343A40!important;
+    border-color: #343A40!important;
+    color:white!important;
+  }
+  ng-select.ng-invalid.ng-touched .ng-select-container {
+    border-color: #dc3545;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+  }
+/*  */

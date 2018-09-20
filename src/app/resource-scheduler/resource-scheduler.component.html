@@ -1,0 +1,771 @@
+<div class="fixed-top" style="background-color: white">
+  <app-navigation></app-navigation>
+  <!-- navigate between day, week, and month -->
+  <div class="navbar nav-tabs fresche-nav-tabs" style="margin-bottom: -50px;">
+    <ul class="nav ml-auto">
+      <li class="nav-item form-inline">
+        <span class="nav-link fresche-active form-group">
+          <i (click)="calculateUtilization(viewDate,'')" style="font-size: 1.5em;" for="switchTheWeek" mwlCalendarPreviousView (viewDateChange)="skipWeekends('back')"
+            [view]="view" [(viewDate)]="viewDate" (viewDateChange)="activeDayIsOpen = false" class="fa fa-angle-left fa-fw pointer"
+            aria-hidden="true"></i>&nbsp;&nbsp;&nbsp;
+          <input type="week" style="display: inline;" id="switchTheWeek" class="form-control" min="1900-W01" max="2099-W52" onkeydown="return false"
+            [(ngModel)]="viewDatenew" aria-describedby="basic-addon1" (change)="changeWeek(viewDatenew)"> &nbsp;&nbsp;&nbsp;
+          <i (click)="calculateUtilization(viewDate,'')" style="font-size: 1.5em;" mwlCalendarNextView (viewDateChange)="skipWeekends('forward')"
+            [view]="view" [(viewDate)]="viewDate" (viewDateChange)="activeDayIsOpen = false" class="fa fa-angle-right fa-fw pointer"
+            aria-hidden="true"></i>
+        </span>
+      </li>
+    </ul>
+  </div>
+  <!-- navigate between project and resource view -->
+  <div class="navbar nav-tabs fresche-nav-tabs" style="float:left;">
+    <div *ngIf="projectView">
+      <ul class="nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link fresche-nav-link" (click)="viewResource()">Resource View</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active fresche-active fresche-nav-link" (click)="viewProject()">Project View</a>
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="resourceView">
+      <ul class="nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link active fresche-active fresche-nav-link" (click)="viewResource()">Resource View</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fresche-nav-link" (click)="viewProject()">Project View</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- filtering bar -->
+  <div class="navbar navbar-expand-md bg-fresche navbar-dark">
+    <ul class="nav navbar-nav mr-auto" style="padding-left: 1.3em;">
+      <li class="nav-item" *ngIf="!isRoleEmployee">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Resource Status </span>
+            </div>
+            <select *ngIf="resourceView" aria-describedby="basic-addon1" [(ngModel)]="userFilter2" class="form-control filter-option"
+              (change)="showClear();calculateUtilization(viewDate,'')">
+              <option>All</option>
+              <option *ngFor="let resourceType of resourceTypes">
+                {{resourceType.detail.resourceTypeDesc}}
+              </option>
+            </select>
+            <select *ngIf="projectView" aria-describedby="basic-addon1" [(ngModel)]="resourceType" name="ResourceFilterType" (change)="filterProjectEventsByResourceType(resourceType)"
+              class="form-control filter-option">
+              <option value="All">All</option>
+              <option *ngFor="let resourceType of resourceTypes" [value]="resourceType.detail.resourceTypeId">
+                {{resourceType.detail.resourceTypeDesc}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Project Type</span>
+            </div>
+            <select *ngIf="resourceView" aria-describedby="basic-addon1" [(ngModel)]="projectType" name="projectTypeFilter" (change)="filterResourceEventsByProjectType(projectType)"
+              class="form-control filter-option">
+              <option value="All">All</option>
+              <option *ngFor="let type of projectTypes" [value]="type.detail.projectTypeId">
+                {{type.detail.projectTypeDesc}}
+              </option>
+            </select>
+            <select *ngIf="projectView" aria-describedby="basic-addon1" [(ngModel)]="projectType2" class="form-control filter-option"
+              (change)="showClear()">
+              <option value="All">All</option>
+              <option *ngFor="let type of projectTypes">
+                {{type.detail.projectTypeDesc}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item" *ngIf="resourceView">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Skill</span>
+            </div>
+            <ng-multiselect-dropdown [placeholder]="'Any'" [(ngModel)]="skillRes" [data]="skillsList" [settings]="dropdownSettings" class="filter-option-multi form-control"
+              (onSelect)="showClear();" (onSelectAll)="showClear();" aria-describedby="basic-addon1">
+            </ng-multiselect-dropdown>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item" *ngIf="resourceView">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Experience</span>
+            </div>
+            <select aria-describedby="basic-addon1" [(ngModel)]="expRes" class="form-control filter-option" (change)="showClear();calculateUtilization(viewDate,'')">
+              <option value="All">All</option>
+              <option *ngFor="let experience of exp">
+                {{experience.value}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item" *ngIf="resourceView">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Title</span>
+            </div>
+            <select aria-describedby="basic-addon1" [(ngModel)]="designRes" class="form-control filter-option" (change)="showClear();calculateUtilization(viewDate,'')">
+              <option value="All">All</option>
+              <option *ngFor="let desig of designations" [value]="desig.detail">
+                {{desig.detail}}
+              </option>
+            </select>
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">
+        <input type="text" *ngIf="resourceView" class="form-control" placeholder="Search" name="search" [(ngModel)]="userFilter"
+          (input)="showClear()">
+        <input type="text" *ngIf="projectView" class="form-control" placeholder="Search" name="search" (change)="fillFilter(projectFilter)"
+          [(ngModel)]="projectFilter" (input)="showClear()">
+      </li>
+      <li class="nav-item">
+        <button *ngIf="show" class="btn btn-warning navbar-btn" id="basic-addon1" (click)="selectedItems = [];userFilter='';userFilter2='All'; projectFilter=''; expRes = 'All'; skillRes = 'Any'; projectType='All';
+            filterResourceEventsByProjectType('All'); resourceType='All';filterProjectEventsByResourceType('All'); serFilter2='All'; designRes = 'All'; projectType2='All';trueShow()">
+          Reset Filter
+        </button>
+      </li>
+    </ul>
+    <ul class="nav ml-auto">
+      <li class="nav-item">
+        <div class="input-group">
+          <div class="input-group-prepend">
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <br>
+
+  <!-- remove header for weekly view -->
+  <ng-template #removeHeader let-days="days" let-locale="locale" let-dayClicked="dayClicked" let-eventDropped="eventDropped">
+  </ng-template>
+  <!-- fixed header for weekly -->
+  <mwl-demo-utils-calendar-header [(view)]="view" [(viewDate)]="viewDate" weekStartsOn="0">
+  </mwl-demo-utils-calendar-header>
+  <!-- fixed weekly header -->
+  <div class="container-fluid">
+    <div class="row row-no-pad">
+      <div class="col-xs-2">
+        <div class="border scheduler-title">
+          <h4 class="text-center" style="color:black">
+            <span *ngIf="resourceView">Resources</span>
+            <span *ngIf="projectView">Projects</span>
+          </h4>
+        </div>
+      </div>
+      <div class="col-sm col-no-pad">
+      <div style="float:left;width:10%;position: static;">
+        <mwl-calendar-week-view [headerTemplate]="headerTemplate" [viewDate]="viewDate" weekStartsOn="0" [excludeDays]="onlySunday">
+        </mwl-calendar-week-view>
+      </div>
+        <div style="width: 80%;float:left">
+          <mwl-calendar-week-view [headerTemplate]="headerTemplate" [viewDate]="viewDate" weekStartsOn="0" [excludeDays]="excludeDays">
+          </mwl-calendar-week-view>
+        </div>
+        <div style="float:left;width:10%;position: static;">
+          <mwl-calendar-week-view [headerTemplate]="headerTemplate" [viewDate]="viewDate" weekStartsOn="0" [excludeDays]="onlySaturday">
+          </mwl-calendar-week-view>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-padding">
+  <!-- Resource view -->
+  <div *ngIf="resourceView">
+    <div class="row row-schedule row-no-pad container-fluid" *ngFor="let resource of resourceDetail | resourceFilterAccToResTyp:userFilter2 | filter: userFilter 
+        | resourceFilterAccDesignation: designRes | resourceFilterExpType: expRes | resourceFilterSkillType: skillRes">
+      <div class="col-xs">
+        <div class="{{resource.employeeType}}" style="height:100%">
+          <div class="project-details border-top" data-spy="affix">
+            <div class="row">
+              <div class="col-sm-12">
+                <h6 class="text-center resource-name">{{resource.resourceName}}</h6>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <img [src]="resource.src" onerror="this.src='./assets/images/0.png';" class="img-thumbnail">
+                <button type="button" class="footer-align-res" *ngIf="!isRoleEmployee" (click)="openModal0(resource,AllocateProject)" data-toggle="tooltip"
+                  title="Allocate to a new project">
+                  <i class="fas fa-calendar-plus add-new" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
+                </button>
+                <button type="button" (click)="openModal1(resource,InfoResource)" data-toggle="tooltip" title="View resource details">
+                  <i class="fa fa-info-circle view-info" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="col-sm-6 resouce-info" style="padding-left:0; margin-left:0;">
+                <span class="font-weight-bold">Id: {{resource.id}}</span>
+                <br>
+                <span class="font-weight-bold">No. of Projects: {{resource.numProjects}}</span>
+                <br>
+                <span class="font-weight-bold" [ngClass]="{'alert': resource.utilization>100}">Utilization: {{resource.utilization}}%</span>
+                <br>
+                <span class="font-weight-bold">Availability: {{resource.avail}}%</span>
+                <br>
+                <span class="font-weight-bold">Billable: {{resource.billable}}%</span>
+                <br>
+                <span class="font-weight-bold">Non-Billable: {{resource.nonBillable}}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm col-no-pad red-bottom-border">
+        <div class="schedule-weekends">
+          <br>
+        </div>
+        <div class="row-borders" style="width: 80%;height:100%;float:left;">
+          <mwl-calendar-week-view [headerTemplate]="removeHeader" [viewDate]="viewDate" [events]="resource.eventsRes" [refresh]="refresh"
+            (eventClicked)="handleEvent('Clicked', $event.eventsRes)" (eventTimesChanged)="eventTimesChanged($event)" [excludeDays]="excludeDays">
+          </mwl-calendar-week-view>
+        </div>
+        <div class="schedule-weekends">
+          <br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project view -->
+  <div *ngIf="projectView">
+    <div class="row row-schedule row-no-pad container-fluid" *ngFor="let project of projectDetail | projectFilterAccToProTyp :projectType2| projectSchedulerfilter:projectFilter">
+      <div class="col-xs ">
+        <div class="{{project.projectType}}" style="height:100%">
+          <div class="project-details" data-spy="affix">
+            <div class="row">
+              <div class="col-sm-12">
+                <h6 class="text-center project-name" style="padding-top:5px;padding-bottom:5px;">{{project.projectName}}</h6>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12" class="project-info">
+                <span class="font-weight-bold">Start Date: </span>{{project.startDate | date: 'yyyy-MM-dd'}}
+                <br>
+                <span class="font-weight-bold">End Date: </span>{{project.endDate | date: 'yyyy-MM-dd'}}
+                <br>
+                <span class="font-weight-bold">No. of resources working: </span>{{project.noOfEmp}}
+                <br>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <button type="button" class="footer-align" *ngIf="!isRoleEmployee" (click)="openModal2(project,AllocateResource)" data-toggle="tooltip"
+                  title="Allocate a new resource">
+                  <i class="fas fa-user-plus add-new" aria-hidden="true"></i> &nbsp;&nbsp;&nbsp;
+                </button>
+                <button type="button" (click)="openModal2(project, InfoProject)" data-toggle="tooltip" title="View project details">
+                  <i class="fa fa-info-circle view-info" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm col-no-pad red-bottom-border">
+        <div class="schedule-weekends">
+          <br>
+        </div>
+        <div class="row-borders" style="width: 80%;height:100%;float:left;">
+          <mwl-calendar-week-view [headerTemplate]="removeHeader" [viewDate]="viewDate" [events]="project.events" [refresh]="refresh"
+            (eventClicked)="handleEvent('Clicked', $event.eventsRes)" (eventTimesChanged)="eventTimesChanged($event)" [excludeDays]="excludeDays">
+          </mwl-calendar-week-view>
+        </div>
+        <div class="schedule-weekends">
+          <br>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- All resource Popups -->
+<!-- View Resource Details -->
+<ng-template #InfoResource>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <!-- UAT BUG -->
+    <!-- <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{model.id}}</button> -->
+  </div>
+  <div class="modal-body">
+    <table class="table table-responsive">
+      <tr>
+        <th> Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.resourceName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Email </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.email" disabled>
+        </td>
+      </tr>
+      <!-- UAT BUG -->
+      <!-- <tr>
+        <th> Contact </th>
+        <td >
+          <input class="form-control" [(ngModel)]="model.contact" disabled>
+        </td>
+      </tr> -->
+      <tr>
+        <th> Department </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.deptName" disabled>
+        </td>
+      </tr>
+      <!-- UAT BUG -->
+      <!-- <tr>
+        <th> Joining Date </th>
+        <td >
+          <input class="form-control" [(ngModel)]="model.startDate" disabled>
+        </td>
+      </tr> -->
+      <tr>
+        <th> Role </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.roleName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Location </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.locationName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th border="0">Manager </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.managerName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Title </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.designation" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Skills </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.skills" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Experience </th>
+        <td>
+          <input class="form-control" [(ngModel)]="model.experience" disabled>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide()">Close</button>
+    </span>
+  </div>
+</ng-template>
+
+<!-- Allocate Resource to Project -->
+<ng-template #AllocateProject>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{model.id}}</button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-responsive">
+        <tr>
+          <th> Name
+          </th>
+          <td>
+            <input id="name" name="recId1" class="form-control" [(ngModel)]="model.resourceName" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Project Name
+          </th>
+          <td>
+            <ng-select [items]="projectList" bindLabel="projectName" appendTo="body" placeholder="Select Project" bindValue="projectId"
+              [(ngModel)]="model.projectId">
+            </ng-select>
+          </td>
+        </tr>
+        <tr>
+          <th> Start Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" id="start" class="form-control" placeholder="Start Date" name="startDate"
+              [(ngModel)]="model.startDate" (change)="validateEnd(model.startDate)">
+          </td>
+        </tr>
+        <tr>
+          <th> End Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" id="end" class="form-control" min="{{model.startDate}}" name="endDate"
+              [(ngModel)]="model.endDate">
+          </td>
+        </tr>
+        <tr>
+          <th> Percentage Allocation
+          </th>
+          <td>
+            <input type="number" class="form-control" placeholder="Percentage Allocation" [(ngModel)]="model.percentAssign" (change)="seenAllocationWarn = false;">
+          </td>
+        </tr>
+        <tr>
+          <th> Comment
+          </th>
+          <td>
+            <textarea class="form-control comment-txt" maxlength="150" [(ngModel)]="model.comment" id="comment" style="resize: none">
+                  </textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide(); seenAllocationWarn = false;">Close</button>
+      <!--<button type="button" class="btn btn-warning" (click)="resetUser(userDetail)">Reset</button>-->
+      <button type="button" class="btn btn-success" (click)="add(model)">Create</button>
+    </span>
+  </div>
+</ng-template>
+
+<!--Edit Resource Event-->
+<ng-template #editEventRes>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" disabled>ProjectID- {{model1.projectId}}</button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-responsive">
+
+        <tr>
+          <th>Project Name
+          </th>
+          <td>
+            <input id="name" name="recId1" class="form-control" [(ngModel)]="model1.name" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Resource
+          </th>
+          <td>
+            <input type="hidden" [(ngModel)]="model1.resId" disabled>
+            <input type="text" [(ngModel)]="model1.resourceName" class="form-control" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Start Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" id="start" name="startDate" [(ngModel)]="model1.start"
+              (change)="validateEnd(model1.start)">
+          </td>
+        </tr>
+        <tr>
+          <th> End Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" id="end" name="endDate" min="{{model1.start}}"
+              [(ngModel)]="model1.end">
+          </td>
+        </tr>
+        <tr>
+          <th> Percentage Allocation
+          </th>
+          <td>
+            <input type="number" class="form-control" placeholder="Percentage Allocation" [(ngModel)]="model1.allocation">
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide()">Close</button>
+      <!--<button type="button" class="btn btn-warning" (click)="resetUser(userDetail)">Reset</button>-->
+      <button type="button" class="btn btn-primary" (click)="update(model1)">Update</button>
+    </span>
+  </div>
+</ng-template>
+
+<!-- Delete Resource Event -->
+<ng-template #delEventRes>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+
+    <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{model1.projectId}}</button>
+  </div>
+  <div class="modal-body">
+    Are you sure you want to deallocate {{model1.resourceName}} from {{model1.name}}?
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="modalRef.hide()">Close</button>
+    <button type="button" class="btn btn-sm btn-danger" (click)="delete(model1)">Delete</button>
+  </div>
+</ng-template>
+
+<!-- End of Resource Specific popups -->
+
+<!-- All Project Popups -->
+<!-- View Project Details -->
+<ng-template #InfoProject>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{modelPro.projectId}}</button>
+  </div>
+  <div class="modal-body">
+    <table class="table table-responsive">
+      <tr>
+        <th>Project Name &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        </th>
+        <td>
+          <input class="form-control" [(ngModel)]="modelPro.projectName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Start Date </th>
+        <td>
+          <input class="form-control" [(ngModel)]="modelPro.startDate" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> End Date </th>
+        <td>
+          <input class="form-control" [(ngModel)]="modelPro.endDate" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th> Department </th>
+        <td>
+          <input class="form-control" [(ngModel)]="modelPro.deptName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th>Project Manager </th>
+        <td>
+          <input class="form-control" [(ngModel)]="modelPro.projectManagerName" disabled>
+        </td>
+      </tr>
+      <tr>
+        <th>Project Details
+        </th>
+        <td>
+          <textarea class="form-control comment-txt" maxlength="150" [(ngModel)]="modelPro.comment" readonly style="resize: none">
+          </textarea>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide()">Close</button>
+    </span>
+  </div>
+</ng-template>
+
+<!-- Allocate Resource to project -->
+<ng-template #AllocateResource>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{modelPro.projectId}}</button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-responsive">
+
+        <tr>
+          <th>Project Name
+          </th>
+          <td>
+            <input id="name" name="recId1" class="form-control" [(ngModel)]="modelPro.projectName" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Resource
+          </th>
+          <td>
+            <ng-select [items]="resourceList" bindLabel="name" appendTo="body" placeholder="Select Resource" bindValue="resourceId" [(ngModel)]="modelPro.resourceId">
+            </ng-select>
+          </td>
+        </tr>
+        <tr>
+          <th> Start Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="Start Date" (change)="validateEnd(modelPro.startDate)"
+              name="startDate" [(ngModel)]="modelPro.startDate">
+          </td>
+        </tr>
+        <tr>
+          <th> End Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="End Date" name="endDate" min="{{modelPro.startDate}}"
+              [(ngModel)]="modelPro.endDate">
+          </td>
+        </tr>
+        <tr>
+          <th> Percentage Allocation
+          </th>
+          <td>
+            <input type="number" class="form-control" placeholder="Percentage Allocation" [(ngModel)]="modelPro.percentAssign" (change)="seenAllocationWarn = false;">
+          </td>
+        </tr>
+        <tr>
+          <th>Comment
+          </th>
+          <td>
+            <textarea class="form-control comment-txt" maxlength="150" [(ngModel)]="modelPro.comment" name="comment" style="resize: none">
+                  </textarea>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide();seenAllocationWarn = false;">Close</button>
+      <!--<button type="button" class="btn btn-warning" (click)="resetUser(userDetail)">Reset</button>-->
+      <button type="button" class="btn btn-success" (click)="addResinPro(modelPro)">Create</button>
+    </span>
+  </div>
+</ng-template>
+
+<!-- Edit Project Event -->
+<ng-template #editEventPro>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" disabled>ResourceID- {{model1.resId}}</button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-responsive">
+
+        <tr>
+          <th> Name
+          </th>
+          <td>
+            <input id="name" name="recId1" class="form-control" [(ngModel)]="model1.name" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Project Name
+          </th>
+          <td>
+            <input type="hidden" [(ngModel)]="model1.projectId" disabled>
+            <input type="text" [(ngModel)]="model1.projName" class="form-control" disabled>
+          </td>
+        </tr>
+        <tr>
+          <th> Start Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" name="startDate" (change)="validateEnd(model1.start)"
+              [(ngModel)]="model1.start">
+          </td>
+        </tr>
+        <tr>
+          <th> End Date
+          </th>
+          <td>
+            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" id="end" name="endDate" min="{{model1.start}}"
+              [(ngModel)]="model1.end">
+          </td>
+        </tr>
+        <tr>
+          <th> Percentage Allocation
+          </th>
+          <td>
+            <input type="number" class="form-control" placeholder="Percentage Allocation" [(ngModel)]="model1.allocation">
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-right">
+      <button type="button" class="btn btn-secondary" (click)="modalRef.hide()">Close</button>
+      <!--<button type="button" class="btn btn-warning" (click)="resetUser(userDetail)">Reset</button>-->
+      <button type="button" class="btn btn-primary" (click)="update(model1)">Update</button>
+    </span>
+  </div>
+</ng-template>
+
+<!-- Delete Project Event -->
+<ng-template #delEventPro>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+    </h4>
+    <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{model1.resId}}</button>
+  </div>
+  <div class="modal-body">
+    Are you sure you want to deallocate {{model1.name}} from {{model1.projName}}?
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-secondary" (click)="modalRef.hide()">Close</button>
+    <button type="button" class="btn btn-sm btn-danger" (click)="delete(model1)">Delete</button>
+  </div>
+</ng-template>
+<!-- End of Project Popups -->
+
+<!-- Color Legend -->
+<div class="navbar navbar-expand-md fixed-bottom footerBg">
+  <ul class="nav ml-auto">
+    <li class="nav-item">
+      <span class="circle-color circle-permanent"></span> Permanent
+    </li>
+    <li class="nav-item">
+      <span class="circle-color circle-consultant"></span> Consultant
+    </li>
+    <li class="nav-item">
+      <span class="circle-color circle-billable"></span> Billable
+    </li>
+    <li class="nav-item">
+      <span class="circle-color circle-nonbill"></span> Non-Billable
+    </li>
+  </ul>
+</div>

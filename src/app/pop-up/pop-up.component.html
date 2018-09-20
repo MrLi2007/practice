@@ -1,0 +1,46 @@
+<!-- the pop up display when user chooses and action -->
+<ng-template #modalContent let-close="close">
+  <div class="modal-header">
+    <h5 class="modal-title">Edit Resource</h5>
+    <button type="button" class="close" (click)="close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+
+  <div class="container">
+
+      <form>
+    
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label" for="name">Resource Name: </label>
+          <input type="text" required minlength="1" class="col-sm-2 form-control" name="name" id="name" [(ngModel)]="resourcePopupDAO.name">
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="Allocation">Allocation %: </label>
+            <input type="number" required min="0" max="100" class="col-sm-2 form-control" name="Allocation" id="Allocation" [(ngModel)]="resourcePopupDAO.allocation">
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Start Date:</label>
+            <input required  type="date" class="col-sm-2 form-control" name="startDate" [(ngModel)]="resourcePopupDAO.startDate">
+          </div>
+      
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">End Date:</label>
+            <input required  type="date" class="col-sm-2 form-control" name="endDate" [(ngModel)]="resourcePopupDAO.endDate">
+          </div>
+
+          <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Project Type:</label>
+              <select required class="col-sm-2 form-control" name="projectType" [(ngModel)]="resourcePopupDAO.selectedProjectType">
+                <option *ngFor="let pro of projectType" [value]="pro">{{pro}}</option>
+              </select>
+          </div>
+      </form>
+    </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary"  (click)="update(); close()">Update</button>
+    <button type="button" class="btn btn-outline-secondary" (click)="close()">Cancel</button>
+  </div>
+</ng-template>

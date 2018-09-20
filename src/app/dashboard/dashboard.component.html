@@ -1,0 +1,204 @@
+<app-navigation></app-navigation>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <li class="nav-item">&nbsp;</li>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+    aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">&nbsp;</li>
+      <li class="nav-item">
+        <form class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Department</span>
+            </div>
+            <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filter" name="department" (change)="makeType(filter)"
+              class="form-control">
+              <option value="All" [selected]="(filter===undefined || filter==='All')">All</option>
+              <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+                {{dep.detail.deptName}} - {{dep.detail.deptId}}
+              </option>
+            </select>
+          </div>
+        </form>
+      </li>
+
+      <li class="nav-item">&nbsp;</li>
+      <li class="nav-item">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Start Date</span>
+            </div>
+            <input class="fa fa-calendar-o" style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" aria-hidden="true" type="date"
+              max="2099-12-31" min="1900-01-01" [(ngModel)]="sdatefilter" (change)="makeFilterArray(sdatefilter)" class="form-control">
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">&nbsp;</li>
+      <li class="nav-item">
+        <div class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">End Date</span>
+            </div>
+            <input style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" min="{{sdatefilter}}" type="date" max="2099-12-31"
+              [(ngModel)]="edatefilter" (change)="makeFilter(edatefilter)" class="form-control">
+          </div>
+        </div>
+      </li>
+      <li class="nav-item">&nbsp;</li>
+      <li class="nav-item">
+        <form class="form-inline">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Sort By </span>
+            </div>
+            <button style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" class="form-control" (click)="sortstart('startDate')">
+              Start Date
+              <i class="fa fa-fw fa-sort" *ngIf="key1 =='startDate'" [ngClass]="reverse1? 'fa fa-sort-desc' : 'fa fa-sort-asc'"></i>
+            </button>
+            <button (click)="sortend('endDate')" style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" class="form-control">
+              End Date
+              <i *ngIf="key2 =='endDate'" [ngClass]="reverse2? 'fa fa-sort-desc' : 'fa fa-sort-asc'"></i>
+            </button>
+          </div>
+        </form>
+      </li>
+      <li class="nav-item">
+        <button *ngIf="(filter!=undefined && filter!='All')
+              || (edatefilter!=undefined && edatefilter!='') 
+              || (sdatefilter!=undefined && sdatefilter!='') " class="btn btn-lg btn-warning navbar-btn" id="basic-addon1"
+          (click)="filter='All';makeType('All');
+                          edatefilter='';makeFilterArray('');
+                          sdatefilter='';makeFilter('');">
+          Reset Filter
+        </button>
+      </li>
+    </ul>
+    <div class="form-inline my-2 my-lg-0">
+      <input type="search" placeholder="Search" aria-label="Search" [(ngModel)]="userFilter" class="form-control mr-sm-2">
+    </div>
+  </div>
+</nav>
+
+
+
+<div class="col-sm">
+  <div class="navbar nav-tabs fresche-nav-tabs row">
+    <ul class="nav mr-auto">
+      <li class="nav-item">
+        <a *ngIf="tableResource" class="nav-link active fresche-active fresche-nav-link" (click)="resourcesOnProjects()">Resources on different projects</a>
+        <a *ngIf="!tableResource" class="nav-link fresche-nav-link" (click)="resourcesOnProjects()">Resources on different projects</a>
+      </li>
+      <li class="nav-item">
+        <a *ngIf="tableProject" class="nav-link active fresche-active fresche-nav-link" (click)="projectAllocatios()">Project Allocations</a>
+        <a *ngIf="!tableProject" class="nav-link fresche-nav-link" (click)="projectAllocatios()">Project Allocations</a>
+      </li>
+      <li class="nav-item">
+        <a *ngIf="chart" class="nav-link active fresche-active  fresche-nav-link" (click)="chartView()">Chart View</a>
+        <a *ngIf="!chart" class="nav-link  fresche-nav-link" (click)="chartView()">Chart View</a>
+      </li>
+      <li class="nav-item">
+        <a *ngIf="graph" class="nav-link active fresche-active fresche-nav-link" (click)="graphView()">Graph View</a>
+        <a *ngIf="!graph" class="nav-link  fresche-nav-link" (click)="graphView()">Graph View</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Project Allocations Table -->
+  <div *ngIf="tableProject" class="float-left">
+    <div class="row row-schedule row-no-pad container-fluid" *ngFor="let project of projects">
+      <div class="col-xs ">
+        <div class="{{project.projectType}}" style="height:100%">
+          <div class="project-details" data-spy="affix">
+            <div class="row">
+              <div class="col-sm-12">
+                <h6 class="text-center font-weight-bold" style="padding-top:5px;padding-bottom:5px;">{{project.projectName}}</h6>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12" class="project-info">
+                <span class="font-weight-bold">Start Date: </span>{{project.startDate | date: 'yyyy-MM-dd'}}
+                <br>
+                <span class="font-weight-bold">End Date: </span>{{project.endDate | date: 'yyyy-MM-dd'}}
+                <br>
+                <span class="font-weight-bold">No. of resources working: </span>{{project.noOfEmp}}
+                <br>
+              </div>
+              <div class="container" *ngFor="let element of project.nameofEmployees">
+                <div class="row">
+                  <div class="col-lg-4 border pos text-center">
+                    {{element.name}}
+                  </div>
+                  <div class="col-lg-4 border pos text-center">
+                    {{element.resourceId}}
+                  </div>
+                  <div class="col-lg-4 border pos text-center">
+                    {{element.assignmentId}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Resource Table -->
+  <div *ngIf="tableResource">
+    <div class="row" *ngFor="let resource of resources">
+      <div class="col-xs">
+        <div class="{{resource.employeeType}}" style="height:100%">
+          <div class="project-details border-top" data-spy="affix">
+            <div class="row">
+              <div class="col-sm-12">
+                <h6 class="text-center resource-name">{{resource.name}}</h6>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <img [src]="resource.src" onerror="this.src='./assets/images/0.png';" class="img-thumbnail">
+              </div>
+              <div class="col-sm-6 resouce-info" style="padding-left:0; margin-left:0;">
+                <span class="font-weight-bold">Role: {{resource.roleName}}</span>
+                <br>
+                <span class="font-weight-bold">No.of Project: {{resource.uniqueProjects}}</span>
+                <br>
+                <span class="font-weight-bold">ID: {{resource.resourceId}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm col-no-pad red-bottom-border">
+        <div class="table" style="width: 80%;height:100%;float:left;">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <td class="table-style">Project Name</td>
+                <td class="table-style">Project Type</td>
+                <td class="table-style">Percentage</td>
+                <td class="table-style">StartDate</td>
+                <td class="table-style">EndDate</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let resourceProject of resource.nameofProjects">
+                <td>{{resourceProject.name}}</td>
+                <td>{{resourceProject.projectType}}</td>
+                <td>{{resourceProject.percentage}}</td>
+                <td>{{resourceProject.startDate}}</td>
+                <td>{{resourceProject.endDate}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

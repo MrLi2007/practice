@@ -1,0 +1,54 @@
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <ul class="nav mr-auto" style="margin-left:2%">  
+    <li class="nav-item">
+      <a target="_blank" class="navbar-brand" style="margin:0;padding:0;">
+        <img src="../assets/images/2017-fresche-logo-1.png" alt="Fresche Solutions" style="height:90%;">
+      </a>
+      <a class="navbar-brand" style="color:rgb(145, 143, 143)">
+        Resource Scheduling System
+      </a>
+    </li>
+  </ul>
+  <ul class="navbar-nav mc-auto">
+    <li class="nav-item"  routerLinkActive="active">
+      <a class="nav-link" routerLink="/scheduler" routerLinkActive="active-link" >Scheduler</a>
+    </li>
+    <li class="nav-item"  routerLinkActive="active" >
+      <a class="nav-link" routerLink="/project" *ngIf="role != 103">Project</a>
+    </li>
+    <li class="nav-item"  routerLinkActive="active">
+      <a class="nav-link" routerLink="/profile" *ngIf= "role != 103">Resource</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a class="nav-link" routerLink="/report">Report</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a class="nav-link" routerLink="/dashboard">Dashboard</a>
+    </li>
+    <li class="nav-item"  routerLinkActive="active">
+      <a class="nav-link" routerLink="/settings" *ngIf= "!(role == '102' || role == '103')" >Settings</a>
+    </li>
+  </ul>
+  <ul class="nav ml-auto" style="margin-right:2%">
+    <li class="nav-item">
+      <a href="../navbar/"></a>
+    </li>
+    <li class="nav-item">
+      <a href="../navbar-static-top/"></a>
+    </li>
+    <li class="nav-item">
+      <div>
+        <div class="dropdown">
+          <img [src]="src" class="img-thumbnail img-responsive img-circle bimg" width="34" style="padding:1px">
+          <button class="dropbtn">{{ userName }}</button>
+          <div class="dropdown-content">
+            <a>
+              <app-change-password></app-change-password>
+            </a>
+            <a role="button" (click)="signout()">Sign Out</a>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</nav>

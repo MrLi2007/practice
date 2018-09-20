@@ -1,0 +1,132 @@
+<app-navigation></app-navigation>
+<nav class="bg-light" style="margin-top: 1%">
+
+    <h3 class="text-center">Resource Allocation Report</h3>
+  </nav>
+  <div class="container">
+  
+    <form>
+      <span class="form-group row">Filter By: </span>
+  
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label" for="resourceType">Resource Status:</label>
+        <select required='true' class="col-sm-2 form-control" name="resourceType" [(ngModel)]="selectedResource">
+          <!-- <option *ngFor="let res of resourceType" [value]="res">{{res}}</option> -->
+          <option>
+            All
+          </option>
+            <option *ngFor="let resourceType of type" [value]="resourceType.detail.resourceTypeId">                {{resourceType.detail.resourceTypeDesc}}
+        </option>
+        </select>
+      </div>
+  
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Project Type:</label>
+        <select required='true' class="col-sm-2 form-control" name="projectType" [(ngModel)]="selectedProject">
+          <!-- <option *ngFor="let pro of projectType" [value]="pro">{{pro}}</option> -->
+          <option>
+            All
+          </option>
+          <option  *ngFor="let type of projectType" [value] ="type?.detail?.projectTypeId">       {{type?.detail?.projectTypeDesc}}
+          </option>
+        </select>
+      </div>
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label">Location:</label>
+        <select required='true' class="col-sm-2 form-control" [(ngModel)]="selectedLocation" name="location">
+          <!-- <option *ngFor="let loc of location" [value]="loc">{{loc}}</option> -->
+          <option>
+            All
+        </option>
+        <option *ngFor="let location of locations" [value]="location.detail.locationId">
+            {{location.detail.locationName}}
+        </option>
+        </select>
+      </div>
+      <!--<div class="form-group row">
+        <label class="col-sm-2 col-form-label">Role:</label>
+        <select required='true' class="col-sm-2 form-control" [(ngModel)]="selectedRole" name="role">
+          <option>
+            All
+          </option>
+          <option  *ngFor="let role of roles" [value] ="role.detail.roleId">
+           {{role.detail.roleName}}
+          </option>
+        </select>
+      </div>-->
+  
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label">Department:</label>
+        <select required='true' class="col-sm-2 form-control" [(ngModel)]="selectedDepartment" name="department">
+          <!-- <option *ngFor="let dep of department" [value]="dep">{{dep}}</option> -->
+          <option>
+            All
+          </option>
+            <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+              {{dep.detail.deptName}} - {{dep.detail.deptId}}
+        </option>
+        </select>
+      </div>
+  
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label">Title:</label>
+        <select required='true' class="col-sm-2 form-control" [(ngModel)]="selectedDesignation" name="designations">
+          <!-- <option *ngFor="let dep of department" [value]="dep">{{dep}}</option> -->
+          <option>
+            All
+          </option>
+          <option *ngFor="let desig of designations" [value]="desig.detail">
+            {{desig.detail}}
+          </option>
+        </select>
+      </div>
+  
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label">Experience:</label>
+        <select required='true' class="col-sm-2 form-control" [(ngModel)]="selectedExperience" name="experience">
+          <!-- <option *ngFor="let dep of department" [value]="dep">{{dep}}</option> -->
+          <option selected="selected">
+            All
+          </option>
+          <option *ngFor="let experience of exp"  [value]="experience.value" >
+            {{experience.value}}
+          </option>
+         
+        </select>
+      </div>  
+      <div class="form-group row" *ngIf="!isRoleEmployee">
+        <label class="col-sm-2 col-form-label" >Skills:</label>
+        <ng-multiselect-dropdown [placeholder]="'Select Skills'" [data]="skillsList" [settings]="dropdownSettings" name="skills"  [(ngModel)]="selectedSkills" style="width: 17%;">
+        </ng-multiselect-dropdown >
+      </div>
+     
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Report Start Date:</label>
+        <input required='true' type="date" max="2099-12-31" min="1900-01-01" class="col-sm-2 form-control" [(ngModel)]="startDate" name="startDate" (change)="selectDate($event.target.value)">
+        <div *ngIf="isInvalidStart">
+          <p style="color: red;">&nbsp;&nbsp; Invalid Start Date </p>
+        </div> 
+      </div>
+  
+      <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Report End Date</label>
+          <input required='true' type="date" max="2099-12-31" min="1900-01-01" class="col-sm-2 form-control" [(ngModel)]="endDate" name="endDate"  (change)="selectDate($event.target.value)" > 
+          <br/><br/>
+          <div *ngIf="isGreaterThen">
+              <p style="color: red;">&nbsp;&nbsp;  Allocation Start Date must be before the Allocation End Date </p>
+            </div> 
+            <div *ngIf="isInvalidEnd">
+              <p style="color: red;">&nbsp;&nbsp;  Invalid End Date </p>
+            </div> 
+        
+      </div>
+      <div class="form-group row"  >
+            <label *ngFor="let format of formats">
+            <input type="radio" name="format"  [value]="format.value" [(ngModel)]="selectedFormat" #repformat="ngModel" required>Download {{format.display}}&nbsp;&nbsp;&nbsp;&nbsp; 
+          </label>   
+        </div>
+      <button type="button" [disabled]="isGreaterThen===true || isInvalidEnd || isInvalidStart  " class="col-sm-2 btn btn-primary add-btn-margin" (click)='generateReport()'>
+        Get Report
+      </button>
+    </form>
+  </div>

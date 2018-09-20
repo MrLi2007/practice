@@ -1,0 +1,646 @@
+<app-navigation></app-navigation>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+    <li class="nav-item">
+        <button class="btn btn-primary float-right" [disabled]="isAllocationManager===true" (click)="openModal('',templateAddNewResource)" style="background-color: #009ec3">Add Resource
+            <i class="fa fa-fw fa-plus"></i>
+        </button>
+    </li>
+    <li class="nav-item">&nbsp;</li>
+    <li class="nav-item">&nbsp;</li>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+
+            <span class="navbar-brand">Filter By : </span>
+            <li class="nav-item">&nbsp;</li>
+            <li class="nav-item">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Resource Status </span>
+                        </div>
+                        <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filters.resourceType" name="ResourceFilterType"
+                        (change)="method1();" class="form-control">
+                            <option value="All" [selected]="(filters.resourceType===undefined || filters.resourceType==='All')">ALL</option>
+                            <option *ngFor="let resourceType of type" [value]="resourceType.detail.resourceTypeDesc">
+                                {{resourceType.detail.resourceTypeDesc}}
+                            </option>
+                        </select>
+                    </div>
+                </form>
+            </li>
+            <li class="nav-item">&nbsp;</li>
+            <li class="nav-item">
+                <div class="form-inline">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Location</span>
+                        </div>
+                        <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filters.locationType" name="location" 
+                        (change)="method1();"
+                            class="form-control">
+                            <option value="All" [selected]="(filters.locationType===undefined || filters.locationType==='All')">ALL</option>
+                            <option *ngFor="let location of locationss" [value]="location.detail.locationName">
+                                {{location.detail.locationName}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">&nbsp;</li>
+            <li class="nav-item">
+                <div class="form-inline">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Departments</span>
+                        </div>
+                        <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filters.departmentType" name="Departments"
+                        (change)="method1();"class="form-control">
+                            <option value="All" [selected]="(filters.departmentType===undefined || filters.departmentType==='All')">ALL</option>
+                            <option *ngFor="let dep of dept" [value]="dep.detail.deptName">
+                                {{dep.detail.deptName}} - {{dep.detail.deptId}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">&nbsp;</li>
+            <li class="nav-item">
+                <div class="form-inline">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Sort By </span>
+                        </div>
+                        <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filters.sortBy" name="filterChoice"
+                            (change)="sortBy(filters.sortBy)" class="form-control">
+                            <option value="None"> None </option>
+                            <option value="Name"> Name </option>
+                            <option value="Joining Date"> Joining Date </option>
+                        </select>
+                    </div>
+                </div>
+            </li>            
+            <li class="nav-item">&nbsp;
+                <button type="button" [ngClass]="{'btn btn-lg':true,'btn-outline-danger':!showArchive, 'btn-danger':showArchive}"
+                (click)="showArchive=!showArchive">
+                 <span *ngIf="showArchive"> Hide</span>
+                 <span *ngIf="!showArchive"> Show</span>
+                  Archived</button>&nbsp;
+            </li>
+             <li class="nav-item">
+                    <button *ngIf="(filters.resourceType!=undefined && filters.resourceType!='All')
+                    || (filters.departmentType!=undefined && filters.departmentType!='All') || (filters.locationType!=undefined && filters.locationType!='All')
+                     || (filters.sortBy!=undefined && filters.sortBy!='None') "   class="btn btn-lg btn-warning navbar-btn" id="basic-addon1" 
+                    (click)="filters={resourceType:'All', departmentType:'All',locationType:'All',sortBy:'None'};sortBy('None')">
+                    Reset Filter
+                </button>
+            </li>
+        </ul>
+        <div class="form-inline my-2 my-lg-0">
+            <input type="search" placeholder="Search" aria-label="Search" [(ngModel)]="profileFilter" class="form-control mr-sm-2">
+        </div>
+       
+     
+    </div>
+</nav>
+
+<br>
+<br>
+<br>
+
+<div class="container-fluid">
+    <div class="row"> 
+        <div class="col-md-3 main-section text-center" *ngFor="let profile of profileList |archiveResourcePipe :showArchive 
+            | filter: profileFilter| paginate: { itemsPerPage: 6, currentPage: p }">
+            <div [ngClass]="{'row':true, 'user-detail':(profile.resourceTypeId==100 && profile.active), 'user-detail-deactivated':!profile.active, 'user-detail-consultant':(profile.resourceTypeId==101 && profile.active)}"
+                class="row ">
+                <div class="col">
+                    <img [src]="profile.src" onerror="this.src='./assets/images/0.png';" class="rounded-circle img-thumbnail">
+                    <h5>{{profile.name}}</h5>
+                    <p>{{profile.resourceId}}</p>
+                    <hr>
+                    <strong>Title: </strong>
+                    <p>{{profile.designation}}</p>
+                    <p>
+                        <i class="fa fa-map-marker" aria-hidden="true"></i> {{profile.locationName}}
+                    </p>
+                    <hr>
+                    <strong>Manager: </strong>
+                    <p>{{profile.managerName}}</p>
+                </div>
+            </div>
+            <div class="row user-social-detail">
+                <div class="col-12">
+                        <div *ngIf="profile.active==false ">
+                            <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(profile,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <i   class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                            <i   class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                        </div>
+                        <div *ngIf="profile.active==true " >
+                                <div *ngIf="isAllocationManager===true" >
+                                        <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(profile,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <i   class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                                        <i   class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                                </div>
+                                <div *ngIf="isAllocationManager===false" >
+                                        <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(profile,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <i  class="fa fa-pencil-square-o"  aria-hidden="true" (click)="openModal(profile,templateUpdate)" style="color: green"></i>&nbsp;&nbsp;
+                                        <i   class="fa fa-trash-o" aria-hidden="true" (click)="openModal(profile,templateDel)" style="color: red"></i>&nbsp;&nbsp;
+                                </div>
+                                
+                        </div>
+                         
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<div class="page">
+    <pagination-controls (pageChange)="p = $event"></pagination-controls>
+</div>
+<!-- Adding new Resource Model-->
+<div class="row">
+    <div class="col-md-12">
+        <ng-template #templateAddNewResource>
+            <form #myForm="ngForm">
+                <div class="modal-header">
+                    <h4 class="modal-title pull-left">
+                        <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+
+                        <table class="table table-responsive" border="0">
+                            <tr>
+                                <th style="width: 200px">
+                                    ID
+                                </th>
+                                <td border="0">
+                                    <input id="resourceId" class="form-control" name="recId" required [(ngModel)]="userDetail.resourceId" placeholder="Enter id"
+                                        maxlength="5" #name="ngModel" pattern="[a-zA-Z0-9\s]+">
+                                    <span *ngIf="name.errors && name.touched && name.invalid && name.errors.required" style="color: red">Resource Id is required</span>
+                                    <span *ngIf="name.errors && name.errors.pattern" style="color: red">Special characters are not allowed </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0"> Name
+                                </th>
+                                <td border="0">
+                                    <input id="name" name="recId1" class="form-control" [(ngModel)]="userDetail.name" placeholder="Enter name" required #RName="ngModel"
+                                        pattern="[^\s]+([\s][^\s]+)*$" maxlength="50">
+                                    <span *ngIf="RName.errors && RName.touched && RName.invalid && RName.errors.required" style="color: red">Resource Name is Required</span>
+                                    <span *ngIf="RName.errors && RName.errors.pattern" style="color: red">Invalid Resource Name</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0"> Email
+                                </th>
+                                <td border="0">
+                                    <input id="email" name="email" class="form-control" [(ngModel)]="userDetail.email" required placeholder="Enter email" #email="ngModel"
+                                        pattern="^[A-Za-z0-9._%+-]+@freschesolutions.com$">
+                                    <span *ngIf="email.touched && email.invalid && email.errors.required" style="color: red">Email is Required</span>
+                                    <span *ngIf=" email.errors && email.errors.pattern" style="color: red">Enter Valid Email Adress</span>
+                                </td>
+                            </tr>
+                              <!-- UAT BUG -->
+                            <!-- <tr>
+                                <th border="0"> Contact
+                                </th>
+                                <td border="0">
+                                    <input type="string" name="recId3" id="contactNumber" class="form-control" name="contactNumber" placeholder="Enter contact"
+                                        [(ngModel)]="userDetail.contact"  #contact="ngModel" pattern="\+?[\d]+((-[\d]+)?)+" minlength="5" maxlength="15">
+                                        <span *ngIf=" contact.errors && contact.errors.pattern" style="color: red">Enter valid phone number</span>
+                                        <span *ngIf=" contact.errors && contact.errors.minlength" style="color: red">Atleast 5 digits required</span>
+
+                                </td>
+                            </tr> -->
+                            <tr>
+                                <th border="0">Department
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="deptName" [(ngModel)]="selectedDepartment" name="Department" required #department="ngModel">
+                                        <option value="" disabled="true" [selected]="(selectedDepartment===undefined || selectedDepartment==='')">--please select--</option>
+                                        <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+                                            {{dep.detail.deptName}} - {{dep.detail.deptId}}
+                                        </option>
+                                    </select>
+                                    <span *ngIf="  department.errors && department.touched && department.invalid && department.errors.required" style="color: red">Select a Department</span>
+                                </td>
+                            </tr>
+                            <!-- UAT BUG -->
+                            <!-- <tr>
+                                <th border="0"> Joining Date
+                                </th>
+                                <td border="0">
+                                    <input type="date" min="1900-01-01" max="2099-12-31" class="form-control" [(ngModel)]="userDetail.startDate" name="startDate" required #date="ngModel" (change)="validateJoiningDate(userDetail.startDate)">
+                                    <span *ngIf=" date.errors && date.touched && date.invalid && date.errors.required" style="color: red">Joining Date is required</span>
+                                    <span *ngIf="isInvalidStart"
+                                         style="color: red;"> Invalid Date 
+                                </span> 
+                                </td>
+                            </tr> -->
+                            <tr>
+                                <th border="0"> Status 
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="resourceType" [(ngModel)]="selectedResourceType" name="resourceType" required
+                                        #ResourceType="ngModel">
+                                        <option value="" disabled="true" [selected]="(selectedResourceType===undefined || selectedResourceType==='')">--please select--</option>
+                                        <option *ngFor="let resourceType of type" [value]="resourceType.detail.resourceTypeId">
+                                            {{resourceType.detail.resourceTypeDesc}}
+                                        </option>
+                                    </select>
+                                    <span *ngIf=" ResourceType.errors && ResourceType.touched && ResourceType.invalid && ResourceType.errors.required" style="color: red">Select a Status of resource</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0"> Role
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="role" [(ngModel)]="selectedRole" name="role" required #role="ngModel">
+                                        <option value="" disabled="true" [selected]="(selectedRole===undefined || selectedRole==='')">--please select--</option>
+                                        <option *ngFor="let role of roles" [value]="role.detail.roleId">
+                                            {{role.detail.roleName}}
+                                        </option>
+                                    </select>
+                                    <span *ngIf=" role.errors && role.touched && role.invalid && role.errors.required" style="color: red">Select a role</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0">Location
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="locations" [(ngModel)]="selectedLocation" name="location" required #location="ngModel">
+                                        <option value="" disabled="true" [selected]="(selectedLocation===undefined || selectedLocation==='')">--please select--</option>
+                                        <option *ngFor="let location of locationss" [value]="location.detail.locationId">
+                                            {{location.detail.locationName}}
+                                        </option>
+                                    </select>
+                                    <span *ngIf="  location.errors && location.touched && location.invalid && location.errors.required" style="color: red">Select a Location</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0">Manager
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="managers" [(ngModel)]="selectedManager" name="managers" required #manager="ngModel">
+                                        <option value="" disabled="true" [selected]="(selectedManager==undefined || selectedManager==='')">--please select--</option>
+                                        <option *ngFor="let manager of managers | orderBy: 'value' " [ngValue]="manager.id">{{manager.value}}</option>
+                                    </select>
+                                    <span *ngIf=" manager.errors && manager.touched && manager.invalid && manager.errors.required" style="color: red">Select a Manager</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0">Title
+                                </th>
+                                <td border="0">
+                                    <select type="string" class="form-control" id="designations" [(ngModel)]="selectedDesignation" name="designations" required
+                                        #designation="ngModel">
+                                        <option value="" disabled="true" [selected]="( selectedDesignation==undefined || selectedDesignation==='')">--please select--</option>
+                                        <option *ngFor="let designation of designations" [ngValue]="designation">{{designation}}</option>
+                                    </select>
+                                    <span *ngIf="  designation.errors && designation.touched && designation.invalid && designation.errors.required" style="color: red">Select a Title</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0">Skills
+                                </th>
+                                <td border="0" title="">
+                                    <ng-multiselect-dropdown [placeholder]="'Add Skills'" name="skills" [data]="skillsList" [(ngModel)]="userDetail.skills" [settings]="dropdownSettings" required>
+                            </ng-multiselect-dropdown>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th border="0">Experience
+                                </th>
+                                <td border="0" title="">
+                                    <input type="string" pattern="^(\d)+([.](([1-9])|([0][1-9])|([1][01])))?$" maxlength="5"  class="form-control" name="experience" [(ngModel)]="userDetail.experience" #exp1="ngModel"  >
+                                    <span *ngIf=" exp1.errors && exp1.errors.pattern" style="color: red">Please enter valid value for years and months.</span>
+                                
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <span class="pull-right">
+                        <button type="button" class="btn btn-secondary" (click)="modalRef.hide()">Close</button>
+                        <button type="button" class="btn btn-warning" (click)="resetUser()">Reset</button>
+                        <button type="submit" class="btn btn-success" (click)="saveUser(userDetail)" [disabled]="myForm.invalid || isInvalidStart ">Create</button>
+                    </span>
+                </div>
+            </form>
+        </ng-template>
+    </div>
+</div>
+
+<!--Template for info-->
+<ng-template #templateInfo style="width: 300px;">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">
+            <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+        </h4>
+          <!-- UAT BUG -->
+        <!-- <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{userDetail.resourceId}}</button> -->
+    </div>
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table" border="0">
+                <tr border="0">
+                    <th> Name
+                    </th>
+                    <td border="0">
+                        <input class="form-control" [(ngModel)]="userDetail.name" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0"> Email
+                    </th>
+                    <td border="0">
+                        <input class="form-control" [(ngModel)]="userDetail.email" readonly>
+                    </td>
+                </tr>
+                  <!-- UAT BUG -->
+                <!-- <tr>
+                    <th border="0"> Contact
+                    </th>
+                    <td border="0">
+                        <input class="form-control" name="contactNumber" [(ngModel)]="userDetail.contact" readonly>
+                    </td>
+                </tr> -->
+                <tr>
+                    <th border="0">Department
+                    </th>
+                    <td border="0">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.deptName" readonly>
+                    </td>
+                </tr>
+                  <!-- UAT BUG -->
+                <!-- <tr>
+                    <th border="0"> Joining Date
+                    </th>
+                    <td border="0">
+                        <!--<input type="date" class="form-control" [(ngModel)]="userDetail.startDate" name="startDate" readonly>-->
+                        <!-- <span class="form-control" readonly>
+                                {{userDetail.startDate | date:'yyyy-MM-dd'}}
+                        </span>
+                    </td> -->
+                <!-- </tr> -->
+                <tr>
+                    <th border="0"> Status 
+                    </th>
+                    <td border="0" title="{{userDetail.resourceTypeId}}">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.resourceTypeDesc" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0"> Role
+                    </th>
+                    <td border="0" title="{{userDetail.roleId}}">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.roleName" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0">Location
+                    </th>
+                    <td border="0" title="{{userDetail.locationId}}">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.locationName" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0">Manager
+                    </th>
+                    <td border="0" title="{{userDetail.managerId}}">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.managerName" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0">Title
+                    </th>
+                    <td border="0" title="{{userDetail.designation}}">
+                        <input class="form-control" type="text" [(ngModel)]="userDetail.designation" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0">Skills
+                    </th>
+                    <td border="0" title="">
+                        <!--<input type="string" value="Amsterdam,Washington,Sydney,Beijing,Cairo" data-role="tagsinput" class="form-control" name="skills" [(ngModel)]="userDetail.skills" > -->
+                       <input type="string"  class="form-control" name="skills" [(ngModel)]="userDetail.skills" readonly >
+                    </td>
+                </tr>
+                <tr>
+                    <th border="0">Experience
+                    </th>
+                    <td border="0" title="">
+                        <input type="number"  class="form-control" [(ngModel)]="userDetail.experience" readonly >
+                    </td>
+                </tr>
+              
+            </table>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+
+
+        <span class="pull-right">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="modalRef.hide()">Close</button>
+        </span>
+    </div>
+
+</ng-template>
+
+<!--Template for update-->
+<ng-template #templateUpdate>
+      <form #myForm="ngForm">
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">
+            <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+        </h4>
+          <!-- UAT BUG -->
+        <!-- <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{userDetail.resourceId}}</button> -->
+    </div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="table-responsive">
+                <table class="table" border="0">
+                    <tr>
+                        <th style="width: 200px">Name</th>
+                        <td>
+                            <input id="name" name="recId1" class="form-control" [(ngModel)]="userDetail.name" required #RName1="ngModel" pattern="[^\s]+([\s][^\s]+)*$" maxlength="50">
+                            <span *ngIf="RName1.errors && RName1.touched && RName1.invalid && RName1.errors.required" style="color: red">Resource Name is Required</span>
+                            <span *ngIf="RName1.errors && RName1.errors.pattern" style="color: red">Invalid Resource Name</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>
+                            <input id="email" name="recId2" class="form-control" [(ngModel)]="userDetail.email" required #email1="ngModel" pattern="^[A-Za-z0-9._%+-]+@freschesolutions.com$">
+                            <span *ngIf=" email1.touched && email1.invalid && email1.errors.required" style="color: red">Email is Required</span>
+                            <span *ngIf=" email1.errors && email1.errors.pattern" style="color: red">Enter Valid Email Adress</span>
+                    </tr>
+                      <!-- UAT BUG -->
+                    <!-- <tr>
+                        <th>Contact</th>
+                        <td>
+                            <input type="string" id="contactNumber" class="form-control" name="contactNumber" [(ngModel)]="userDetail.contact" 
+                                #contact1="ngModel" pattern="\+?[\d]+((-[\d]+)?)+" minlength="5" maxlength="15">
+                            <span *ngIf=" contact1.errors && contact1.errors.pattern" style="color: red">Enter valid phone number</span>
+                            <span *ngIf=" contact1.errors && contact1.errors.minlength" style="color: red">Atleast 5 digits required</span>
+                        </td>
+                    </tr> -->
+                    <tr>
+                        <th>Department</th>
+                        <td>
+                            <select type="string" class="form-control" id="deptName" [(ngModel)]="userDetail.deptId" name="Department" required #department1="ngModel">
+                                <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+                                    {{dep.detail.deptName}} - {{dep.detail.deptId}}
+                                </option>
+                            </select>
+                            <span *ngIf="  department1.errors && department1.touched && department1.invalid && department1.errors.required" style="color: red">Select a Department</span>
+                        </td>
+                    </tr>
+                    <tr>
+                          <!-- UAT BUG -->
+                        <!-- <th>Joining Date</th>
+                        <td>
+                            <input type="date" min="1900-01-01" max="2099-12-31" class="form-control" [(ngModel)]="userDetail.startDate" name="startDate" required #date1="ngModel" max="{{date}}" (change)="validateJoiningDate(userDetail.startDate)">
+                            <span *ngIf=" date1.errors && date1.touched && date1.invalid && date1.errors.required" style="color: red" min="1/1/2018 ">Joining Date is required</span> -->
+                            <!-- <span *ngIf="isInvalidStart" style="color: red">Invalid Date</span> -->
+                            <!-- <span *ngIf="isInvalidStart"
+                                 style="color: red;"> Invalid Date 
+                            </span> 
+                        </td>
+                    </tr> -->
+                    <tr>
+                        <th>Status </th>
+                        <td>
+                            <select type="string" class="form-control" id="resourceType" [(ngModel)]="userDetail.resourceTypeId" name="resourceType"
+                                required #ResourceType="ngModel">
+                                <option *ngFor="let resourceType of type" [value]="resourceType.detail.resourceTypeId">
+                                    {{resourceType.detail.resourceTypeDesc}}
+                                </option>
+                            </select>
+                            <span *ngIf=" ResourceType.errors && ResourceType.touched && ResourceType.invalid && ResourceType.errors.required" style="color: red">Select a Status of resource</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Role</th>
+                        <td>
+                            <select type="string" class="form-control" id="role" [(ngModel)]="userDetail.roleId" name="role" required #role="ngModel"
+                                required #role="ngModel">
+                                <option *ngFor="let role of roles" [value]="role.detail.roleId">
+                                    {{role.detail.roleName}}
+                                </option>
+                            </select>
+                            <span *ngIf=" role.errors && role.touched && role.invalid && role.errors.required" style="color: red">Select a role</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Location</th>
+                        <td>
+                            <select type="string" class="form-control" id="locations" [(ngModel)]="userDetail.locationId" name="location" required #location="ngModel">
+                                <option *ngFor="let location of locationss" [value]="location.detail.locationId">
+                                    {{location.detail.locationName}}
+                                </option>
+                            </select>
+                            <span *ngIf="  location.errors && location.touched && location.invalid && location.errors.required" style="color: red">Select a Location</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Manager</th>
+                        <td>
+                            <select type="string" class="form-control" id="managers" [(ngModel)]="userDetail.managerId" name="managers" placeholder="select"
+                                required #manager="ngModel">
+                                <option *ngFor="let manager of managers | orderBy: 'value'" [value]="manager.id">{{manager.value}}</option>
+                            </select>
+                            <span *ngIf=" manager.errors && manager.touched && manager.invalid && manager.errors.required" style="color: red">Select a Manager</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Title</th>
+                        <td>
+                            <select type="string" class="form-control" id="designations" [(ngModel)]="userDetail.designation" name="designations " required
+                                #designation="ngModel">
+                                <option *ngFor="let designation of designations" [value]="designation">{{designation}}</option>
+                            </select>
+                            <span *ngIf="  designation.errors && designation.touched && designation.invalid && designation.errors.required" style="color: red">Select a Title</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th border="0">Skills
+                        </th>
+                        <td border="0" title="">
+                            <ng-multiselect-dropdown [placeholder]="'Add Skills'" name="skills" [data]="skillsList" [(ngModel)]="userDetail.skills" [settings]="dropdownSettings" required>
+                            </ng-multiselect-dropdown>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th border="0">Experience
+                        </th>
+                      
+                        <td border="0" title="">
+                            <input type="string" pattern="^(\d)+([.](([1-9])|([0][1-9])|([1][01])))?$" maxlength="5"  class="form-control" name="experience" [(ngModel)]="userDetail.experience" #exp1="ngModel"  >
+                            <span *ngIf=" exp1.errors && exp1.errors.pattern" style="color: red">Please enter valid value for years and months.</span>
+                        
+                        </td>
+                        
+                        
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <span class="pull-right">
+            <button type="button" class="btn btn-small btn-secondary" (click)="modalRef.hide()">Cancel</button>
+            <button type="button" class="btn btn-small btn-success" (click)="updateResource()" [disabled]="myForm.invalid || isInvalidStart">Update</button>
+        </span>
+    </div>
+</form>
+</ng-template>
+
+<!--Template to disable-->
+<ng-template #templateDel>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">
+            <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+        </h4>
+
+        <button class="btn btn-success pull-right" [disabled]="disabled">ID- {{userDetail.resourceId}}</button>
+    </div>
+    <div class="modal-body">
+        Are you sure to delete the resource?
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-secondary" (click)="modalRef.hide()">Close</button>
+        <button type="button" class="btn btn-sm btn-danger" (click)="deleteResource(userDetail.resourceId)" >Delete</button>
+    </div>
+
+</ng-template>
+
+      <!-- Color Legend -->
+      <div class="navbar navbar-expand-md footerBg" align="left" style="bottom: 0;position: fixed;" >
+    <ul class="nav ml-auto">
+      <li class="nav-item" id="legends"> 
+        <span class="circle-color circle-permanent" ></span> Permanent
+      </li>
+      <li class="nav-item"  id="legends"> 
+        <span class="circle-color circle-consultant"></span> Consultant
+      </li>
+      <li class="nav-item" id="legends" >
+        <span class="circle-color circle-archived" ></span> Archived
+      </li>
+    </ul>
+  </div>

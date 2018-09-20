@@ -1,0 +1,30 @@
+.modalAlign{
+	top: 500px;
+}
+.alert {
+    
+    padding: 7px;
+    font-size: .9em;
+    
+    display: inline-block;
+	animation: 2s alertAnim forwards;
+	color: #ff0000;
+}
+::-webkit-input-placeholder {
+    text-transform: none;
+}
+:-moz-placeholder {
+    text-transform: none;
+}
+::-moz-placeholder {
+    text-transform: none;
+}
+:-ms-input-placeholder {
+    text-transform: none;
+}
+::placeholder {
+    text-transform: none;
+}
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #e6e6e6 inset;
+}

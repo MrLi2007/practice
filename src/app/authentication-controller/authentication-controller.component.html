@@ -1,0 +1,62 @@
+<div style="text-align:center">
+</div>
+
+<div class="limiter" style="overflow:hidden;">
+  <div class="container-login100">
+  
+    <div class="wrap-login100">
+    
+      <div class="login100-pic js-tilt" data-tilt>
+        <img src="assets/images/cropped-URL-Preview-Image.jpg" alt="IMG">
+      </div>
+
+      <form  [formGroup] = "myform">
+         
+        <span class="login100-form-title" *ngIf= "formStatus == 'Login'" >
+          Resource Scheduling System
+        </span>
+
+        <span class="login100-form-title" *ngIf= "formStatus == 'Submit'" >
+          Forgot Passsword
+        </span>
+       
+
+        <div class="wrap-input100 validate-input">
+          <input class="input100" type="text" name="email" formControlName="email" placeholder="Employee ID"  
+          [(ngModel)] = "userDetail.username" style="text-transform:uppercase" autofocus >
+          <span class="focus-input100"></span>
+          <span class="symbol-input100">
+            <i class="fa fa-user" aria-hidden="true"></i>
+          </span>
+          </div>
+           <!-- <span *ngIf="myform.controls['email'].hasError('required') && myform.controls['email'].touched" style="color:red" >EmployeeID required!</span> -->
+          <!-- <div class="alert" *ngIf="myform.controls['email'].hasError('pattern')">Email Invalid!</div> -->
+
+        <div class="wrap-input100 validate-input" data-validate = "Password is required" *ngIf= "formStatus == 'Login'">
+          <input class="input100" type="password" formControlName="password"name="pass" placeholder="Password" [(ngModel)] = "userDetail.password">
+          <span class="focus-input100"></span>
+          <span class="symbol-input100">
+            <i class="fa fa-key" aria-hidden="true"></i>
+          </span>
+        </div>
+                <!-- <span *ngIf="!myform.controls['password'].valid && myform.controls['password'].touched&& formStatus == 'Login'" style="color:red">Password required!</span> -->
+        <div class="container-login100-form-btn">
+          <button class="login100-form-btn"   (click) = "authenticateLogin(userDetail)">
+            {{formStatus}} 
+          </button> <br> <br><br>
+          <app-reset-password></app-reset-password>
+          <a href = "javascript:void(0)" (click) = "formStatusScreen(formStatus)" *ngIf= "formStatus == 'Submit'"> Login </a>
+          
+        </div>
+
+        <div class="text-center p-t-12">
+        
+        </div>
+
+        <div class="text-center p-t-136">
+         
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

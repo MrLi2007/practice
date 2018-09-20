@@ -1,0 +1,518 @@
+<app-navigation>
+</app-navigation>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <li class="nav-item">
+        <button class="btn btn-primary float-right" [disabled]="isAllocationManager===true" (click)="openModal('',template)" style="background-color: #009ec3">Add Project
+            <i class="fa fa-fw fa-plus"></i>
+        </button>
+    </li>
+    <li class="nav-item">&nbsp;</li>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>    
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item">&nbsp;</li>
+        <li class="nav-item">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Project type</span>
+                        </div>
+                        <select style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" [(ngModel)]="filter" 
+                        name="first" (change)="makeType(filter)" class="form-control">
+                            <option value="All" [selected]="(filter===undefined || filter==='All')">All</option>
+                            <option *ngFor="let type of projectType" [value]="type.detail.projectTypeDesc">
+                                {{type.detail.projectTypeDesc}}
+                            </option>
+                        </select>
+                </div>
+            </form>
+        </li>
+        <li class="nav-item">&nbsp;</li>
+        <li class="nav-item">
+            <div class="form-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Start Date</span>
+                    </div>
+                    <input class="fa fa-calendar-o" style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" aria-hidden="true" type="date"
+                    max="2099-12-31" min="1900-01-01" [(ngModel)]="sdatefilter" (change)="makeFilterArray(sdatefilter)" class="form-control">
+                </div>
+            </div>
+        </li>
+        <li class="nav-item">&nbsp;</li>
+        <li class="nav-item">
+            <div class="form-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">End Date</span>
+                    </div>
+                    <input style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" min="{{sdatefilter}}" type="date" max="2099-12-31" [(ngModel)]="edatefilter" (change)="makeFilter(edatefilter)"
+                        class="form-control">
+                </div>
+            </div>
+        </li>
+        <li class="nav-item">&nbsp;</li>
+        <li class="nav-item">
+            <form class="form-inline">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Sort By </span>
+                    </div>
+                    <button style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" class="form-control" (click)="sortstart('startDate')">
+                        Start Date
+                        <i class="fa fa-fw fa-sort" *ngIf="key1 =='startDate'" [ngClass]="reverse1? 'fa fa-sort-desc' : 'fa fa-sort-asc'"></i>
+                    </button>
+                    <button (click)="sortend('endDate')" style="width: 150px;font-size: 13px" aria-describedby="basic-addon1" class="form-control">
+                        End Date
+                        <i *ngIf="key2 =='endDate'" [ngClass]="reverse2? 'fa fa-sort-desc' : 'fa fa-sort-asc'"></i>
+                    </button>
+                </div>
+            </form>
+        </li>
+        <li class="nav-item">&nbsp;
+                <button type="button" [ngClass]="{'btn btn-lg':true,'btn-outline-danger':!showArchive, 'btn-danger':showArchive}"
+                (click)="showArchive=!showArchive">
+                 <span *ngIf="showArchive"> Hide</span>
+                 <span *ngIf="!showArchive"> Show</span>
+                  Archived</button>&nbsp;
+        </li>
+        <li class="nav-item">
+            <button *ngIf="(filter!=undefined && filter!='All')
+                || (edatefilter!=undefined && edatefilter!='') 
+                || (sdatefilter!=undefined && sdatefilter!='') " class="btn btn-lg btn-warning navbar-btn" id="basic-addon1"
+                (click)="filter='All';makeType('All');
+                            edatefilter='';makeFilterArray('');
+                            sdatefilter='';makeFilter('');">
+                    Reset Filter
+                </button>
+        </li>
+    </ul>
+    <div class="form-inline my-2 my-lg-0">
+        <input type="search" placeholder="Search" aria-label="Search" [(ngModel)]="userFilter" class="form-control mr-sm-2">
+    </div>
+    </div>
+</nav>
+<br>
+<br>
+<br>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="myDiv" *ngFor="let project of projectList |archiveProjectPipe: showArchive   | typefilter: tfilter | startDatefilter: startDate| endDatefilter: endDate  
+        | dateSortFilter: key1 : reverse1  | dateSortFilter: key2 : reverse2 | 
+        filter: userFilter | paginate: { itemsPerPage: 6, currentPage: p } ">
+            <div class="card" *ngIf="project.projectTypeDesc=='Billable'" style="width: 18rem; height: 18rem;">
+
+                <!--<div class ="imgg">
+                <img src="assets/images/icons/{{project.projectName}}.png" >
+            </div>-->
+
+                <div class="card-body" [ngClass]="project.status==false ? 'bodyRed' : 'card-body'">
+                    <h4 class="title" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">{{project.projectName}}</h4> 
+                    Project Type : {{project.projectTypeDesc}}
+                    <br>
+                    <br> Start Date: {{project.startDate | date:'yyyy-MM-dd'}}
+                    <br> End Date: {{project.endDate | date:'yyyy-MM-dd'}}
+                    <br>
+                    <br>
+                    <div *ngIf="project.status==false">
+                            <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                            <i *ngIf="project.status==false" class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                            <i *ngIf="project.status==false" class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;
+                    </div>
+                    <div *ngIf="project.status==true">
+                            <div *ngIf="isAllocationManager===true">
+                                    <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                                    <i  class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                                    <i  class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;
+                            </div>
+                            <div *ngIf="isAllocationManager===false">
+                                <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                                <i  class="fa fa-pencil-square-o" aria-hidden="true" (click)="openModal(project,templateUpdate)"
+                                style="color: green"></i>&nbsp;&nbsp;
+                                <i  class="fa fa-trash-o" aria-hidden="true" (click)="openModal(project,templateDel)" style="color: red"></i>&nbsp;
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card1" *ngIf="project.projectTypeDesc=='Non-Billable'" style="width: 18rem; height: 18rem;">
+
+                <!--<div class ="imgg">
+                <img src="assets/images/icons/{{project.projectName}}.png" >
+            </div>-->
+
+                <div class="card-body">
+                    <h4 class="title" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">{{project.projectName}}</h4>
+                    <div class="bodyy" [ngClass]="project.status==false ? 'bodyRed' : 'bodyy'">
+
+                        Project Type: {{project.projectTypeDesc}}
+                        <br>
+                        <br> Start Date: {{project.startDate | date:'yyyy-MM-dd'}}
+                        <br> End Date: {{project.endDate | date:'yyyy-MM-dd'}}
+                        <br>
+                        <br>
+                        <div *ngIf="project.status==false">
+                                <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                                <i *ngIf="project.status==false" class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                                <i *ngIf="project.status==false" class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;
+                        </div>
+                        <div *ngIf="project.status==true">
+                                <div *ngIf="isAllocationManager===true">
+                                        <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                                <i   class="fa fa-pencil-square-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;&nbsp;
+                                <i  class="fa fa-trash-o" aria-hidden="true" style="color: rgb(48, 53, 48)"></i>&nbsp;
+                                </div>
+                                <div *ngIf="isAllocationManager===false">
+                                        <i class="fa fa-info-circle" aria-hidden="true" (click)="openModal(project,templateInfo)" style="color: rgb(63, 63, 230)"></i>&nbsp;&nbsp;
+                                        <i *ngIf="project.status==true" class="fa fa-pencil-square-o" aria-hidden="true" (click)="openModal(project,templateUpdate)"
+                                                                    style="color: green"></i>&nbsp;&nbsp;
+                                        <i *ngIf="project.status==true" class="fa fa-trash-o" aria-hidden="true" (click)="openModal(project,templateDel)" style="color: red"></i>&nbsp;
+                                </div>
+                        </div>
+
+                        
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<br>
+<br>
+<div class="page">
+    <pagination-controls (pageChange)="p = $event"></pagination-controls>
+</div>
+
+<ng-template #template>
+    <form #myForm="ngForm">
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">
+                <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+            </h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body" style="height: 490px">
+            <div class="table-responsive">
+                <table class="table" border="0">
+                    <tr>
+                        <th>Project Name</th>
+                        <td>
+                            <input type="text" class="form-control" id="projectName" placeholder="Project name" name="projectName" [(ngModel)]="model.projectName"
+                                required #PName="ngModel" pattern="[^\s]+([\s][^\s]+)*$" maxlength="50">
+                            <span *ngIf="PName.errors && PName.touched && PName.invalid && PName.errors.required" style="color: red">Project Name is Required</span>
+                            <span *ngIf="PName.errors && PName.errors.pattern" style="color: red">Invalid Project Name</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th style="width: 40%">Project Type
+                        </th>
+                        <td>
+                            <select class="col-sm-6 form-control" [(ngModel)]="model.projectTypeId" id="projectTypeId" name="projectTypeDesc" required
+                                #Ptype="ngModel">
+                                <option *ngFor="let type of projectType" [value]="type.detail.projectTypeId">
+                                    {{type.detail.projectTypeDesc}}
+                                </option>
+                            </select>
+                            <span *ngIf="Ptype.errors && Ptype.touched && Ptype.invalid && Ptype.errors.required" style="color: red">Select any Project type</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th> Start Date
+                        </th>
+                        <td>
+                            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="Start Date" name="startDate" [(ngModel)]="model.startDate" required
+                            (change)="validStartDate(model.startDate);validateEnd(model.startDate)" #sdate="ngModel">
+                           
+                            <span *ngIf="sdate.errors && sdate.touched && sdate.invalid && sdate.errors.required" style="color: red">Start Date is Required</span>
+                            <div *ngIf="isInvalidStart">
+                                <p style="color: red;"> Invalid Date </p>
+                              </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>End Date
+                        </th>
+                        <td>
+                            <input type="date" max="2099-12-31" class="form-control" placeholder="End Date" name="endDate" min="{{model.startDate}}" [(ngModel)]="model.endDate"
+                                required #edate="ngModel" (change)="validEndDate(model.endDate)">
+                                <span *ngIf="edate.errors && edate.touched && edate.invalid && edate.errors.required" style="color: red">End Date is Required</span>
+                                <!-- <div *ngIf="endLessThanStart">
+                                    <p style="color: red;"> End date is should be more than Start date  </p>
+                                  </div>  -->
+                                <div *ngIf="isInvalidEnd">
+                                    <p style="color: red;"> Invalid Date </p>
+                                  </div> 
+                                  <!-- <div *ngIf="endLessThanStart">
+                                    <p style="color: red;"> End date is should be more than Start date  </p>
+                                  </div>  -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Department
+                        </th>
+                        <td>
+                            <select class="col-sm-6  form-control" [(ngModel)]="model.deptId" id="deptId" name="deptName" required #deptmnt="ngModel">
+                                <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+                                    {{dep.detail.deptName}} - {{dep.detail.deptId}}
+                                </option>
+                            </select>
+                            <span *ngIf="deptmnt.errors && deptmnt.touched && deptmnt.invalid && deptmnt.errors.required" style="color: red">Select any Department</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Project Manager
+                        </th>
+                        <td>
+                            <select class="col-sm-6  form-control" [(ngModel)]="model.projectManagerId" id="projectManagerId" name="projectManagerName"
+                                required #Manager="ngModel">
+                                <option *ngFor="let mgr of manager | orderBy: 'value' " [value]="mgr.id">
+                                    {{mgr.value}}
+                                </option>
+                            </select>
+                            <span *ngIf="Manager.errors && Manager.touched && Manager.invalid && Manager.errors.required" style="color: red">Select any Manager</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Project Details
+                        </th>
+                        <td>
+                            <textarea class="form-control" maxlength="150" id="projectDetails" name="projectDetails"
+                             [(ngModel)]="model.comment" #projectDetails="ngModel" style="resize: none">
+                                </textarea>
+                            <!-- <span *ngIf="projectDetails.errors && projectDetails.touched && projectDetails.invalid && projectDetails.errors.required" style="color: red"> Project Detail is required</span> -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </form>
+    <div class="modal-footer">
+        <button class="btn btn-secondary pull-right" type="button" (click)="modalRef.hide()()">Close</button>
+        <button class="btn btn-primary pull-right" type="submit" [disabled]="myForm.invalid|| isInvalidEnd || isInvalidStart" (click)="add(model)">Add</button>
+    </div>
+</ng-template>
+
+<!--Template for info-->
+<ng-template #templateInfo>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">
+            <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+        </h4>
+    </div>
+    <div class="modal-body" style="height: 490px">
+        <div class="table-responsive">
+            <table class="table" border="0">
+                <tr>
+                    <th style="width: 150px;">Project Name</th>
+                    <td>
+                        <input type="text" class="form-control" id="projectName" placeholder="Project name" name="projectName" [(ngModel)]="model.projectName"
+                            readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Project Type
+                    </th>
+                    <td>
+                        <input type="text" class="form-control" id="projectName" placeholder="Project name" name="projectName" [(ngModel)]="model.projectTypeDesc"
+                            readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th> Start Date
+                    </th>
+                    <td>
+                        <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="Start Date" name="startDate" [(ngModel)]="model.startDate" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th>End Date
+                    </th>
+                    <td>
+                        <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="End Date" name="endDate" [(ngModel)]="model.endDate" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Department
+                    </th>
+                    <td>
+                        <input type="text" class="form-control" name="endDate" [(ngModel)]="model.deptName" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width: 40%">Project Manager
+                    </th>
+                    <td>
+                        <input type="text" class="form-control" name="endDate" [(ngModel)]="model.projectManagerName" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Project Details
+                    </th>
+                    <td>
+                    <textarea class="form-control" maxlength="150" [(ngModel)]="model.comment" readonly   style="resize: none">
+                    </textarea>
+                </td>
+                </tr>
+              
+            </table>
+        </div>
+        <!-- {{model| json}} -->
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary pull-right" type="button" (click)="modalRef.hide()">Close</button>
+    </div>
+</ng-template>
+
+<!--Template for update-->
+<ng-template #templateUpdate>
+    <form #myForm1="ngForm">
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">
+                <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+            </h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="modalRef.hide()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body" style="height: 490px">
+            <div class="table-responsive">
+                <table class="table" border="0">
+                    <tr>
+                        <th style="width: 150px;">Project Name</th>
+                        <td>
+                            <input type="text" class="form-control" id="projectName" placeholder="Project name" name="projectName" [(ngModel)]="model.projectName"
+                                required #PName="ngModel" pattern="[^\s]+([\s][^\s]+)*$" maxlength="50">
+                            <span *ngIf="PName.errors && PName.touched && PName.invalid && PName.errors.required" style="color: red">Project Name is Required</span>
+                            <span *ngIf="PName.errors && PName.errors.pattern" style="color: red">Invalid Project Name</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="width: 40%">Project Type
+                        </th>
+                        <td>
+                            <select class="col-sm-6 form-control" [(ngModel)]="model.projectTypeId" id="projectTypeId" name="projectTypeDesc" required
+                                #Ptype="ngModel">
+                                <option *ngFor="let type of projectType" [value]="type.detail.projectTypeId">
+                                    {{type.detail.projectTypeDesc}}
+                                </option>
+                            </select>
+                            <span *ngIf="Ptype.errors && Ptype.touched && Ptype.invalid && Ptype.errors.required" style="color: red">Select any Project type</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th> Start Date
+                        </th>
+                        <td>
+                            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="Start Date" name="startDate" [(ngModel)]="model.startDate" required
+                            (change)="validStartDate(model.startDate);validateEnd(model.startDate)"  #Sdate="ngModel">
+                            <span *ngIf="Sdate.errors && Sdate.touched && Sdate.invalid && Sdate.required" style="color: red"> Start Date is required</span>
+                            <div *ngIf="isInvalidStart">
+                                <p style="color: red;"> Invalid Date </p>
+                              </div> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>End Date
+                        </th>
+                        <td>
+                            <input type="date" max="2099-12-31" min="1900-01-01" class="form-control" placeholder="End Date" name="endDate" min="{{model.startDate}}" [(ngModel)]="model.endDate"
+                                required #Edate="ngModel" (change)="validEndDate(model.endDate)" >
+                            <span *ngIf="Edate.errors && Edate.touched && Edate.invalid && Edate.required" style="color: red"> End Date is required </span>
+                            <div *ngIf="isInvalidEnd">
+                                <p style="color: red;"> Invalid Date </p>
+                              </div> 
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Department
+                        </th>
+                        <td>
+                            <select class="col-sm-6  form-control" [(ngModel)]="model.deptId" id="deptId" name="deptName" required #deptmnt="ngModel">
+                                <option *ngFor="let dep of dept" [value]="dep.detail.deptId">
+                                    {{dep.detail.deptName}} - {{dep.detail.deptId}}
+                                </option>
+                            </select>
+                            <span *ngIf="deptmnt.errors && deptmnt.touched && deptmnt.invalid && deptmnt.errors.required" style="color: red">Select any Department</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Project Manager
+                        </th>
+                        <td>
+                            <select class="col-sm-6  form-control" [(ngModel)]="model.projectManagerId" id="projectManagerId" name="projectManagerName"
+                                required #Manager="ngModel">
+                                <option *ngFor="let mgr of manager | orderBy: 'value'" [value]="mgr.id">
+                                    {{mgr.value}}
+                                </option>
+                            </select>
+                            <span *ngIf="Manager.errors && Manager.touched && Manager.invalid && Manager.errors.required" style="color: red">Select any Manager</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Project Details
+                        </th>
+                        <td>
+                            <textarea class="form-control" maxlength="150" id="projectDetails" name="projectDetails"
+                          [(ngModel)]="model.comment" #projectDetails="ngModel" style="resize: none">
+                                </textarea>
+                            <!-- <span *ngIf="projectDetails.errors && projectDetails.touched && projectDetails.invalid && projectDetails.errors.required" style="color: red"> Project Detail is required</span> -->
+                        </td>
+                    </tr>
+                   
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary pull-right" type="button" (click)="modalRef.hide()">Close</button>
+            <!-- <button class="btn btn-warning pull-right" type="button" (click)="modalRef.hide()" >Reset</button> -->
+            <button class="btn btn-primary pull-right" type="submit" [disabled]="myForm1.invalid || isInvalidEnd || isInvalidStart" (click)="update(model)">Update</button>
+        </div>
+    </form>
+</ng-template>
+
+<!--Template to disable-->
+<ng-template #templateDel>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">
+            <img src="assets/images/2017-fresche-logo-1.png" alt="IMG">
+        </h4>
+    </div>
+    <div class="modal-body">
+        Are you sure to delete
+        <strong>{{model.projectName}}</strong> project?
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary pull-right" type="button" (click)="modalRef.hide()">Cancel</button>
+        <button class="btn btn-danger" type="button" (click)="delete(model)">Delete</button>
+    </div>
+</ng-template>
+
+  <!-- Color Legend -->
+<div class="navbar navbar-expand-md footerBg" align="left" style="bottom: 0;position: fixed;" >
+    <ul class="nav ml-auto">
+      
+      <li class="nav-item" id="legend">
+        <span class="circle-color circle-billable"></span> Billable
+      </li>
+      <li class="nav-item" id="legend">
+        <span class="circle-color circle-nonbill"></span> Non-Billable
+      </li>
+      <li class="nav-item" id="legend">
+        <span class="circle-color circle-archived"></span> Archived
+      </li>
+    </ul>
+  </div>
